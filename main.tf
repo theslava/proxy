@@ -64,10 +64,6 @@ resource "aws_instance" "ssh" {
   instance_type          = "t4g.nano"
   key_name               = "aws"
   vpc_security_group_ids = [aws_security_group.ssh_host.id]
-  user_data = <<EOF
-  yum update
-  yum install -y ansible
-  EOF
 }
 
 resource "aws_lb" "proxy" {
