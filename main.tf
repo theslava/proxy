@@ -64,6 +64,9 @@ resource "aws_instance" "ssh" {
   instance_type          = "t4g.nano"
   key_name               = "aws"
   vpc_security_group_ids = [aws_security_group.ssh_host.id]
+  user_data = <<-EOF
+  echo '${chomp(data.local_file.ha_autossh.content)}' >> /home/ec2-user/authorized_keys
+  EOF
 }
 
 resource "aws_lb" "proxy" {
