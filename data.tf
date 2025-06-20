@@ -38,6 +38,3 @@ data "aws_subnets" "default_vpc_subnets" {
   }
 }
 
-data "local_file" "ha_autossh" {
-  filename = "/home/slava/.ssh/ha-autossh.pub"
-}
