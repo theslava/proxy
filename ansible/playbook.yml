@@ -1,0 +1,44 @@
+---
+  - name: nginx-install
+    hosts: all
+    become: yes
+    tasks:
+      - name: Install nginx
+        package:
+          name: nginx
+          update_cache: yes
+          state: latest
+        notify:
+          - Restart nginx
+      - name: Start nginx
+        service:
+          name: nginx
+          state: started
+      - name: Copy variable mapping
+        copy:
+          src: nginx-vserver-connection.conf
+          dest: "/etc/nginx/conf.d/connection-header-map.conf"
+          owner: root
+          group: root
+          mode: '0644'
+        notify: Reload nginx
+      - name: Template vserver
+        template:
+          src: nginx-vserver.j2
+          dest: "/etc/nginx/conf.d/{{item.service}}.conf"
+          owner: root
+          group: root
+          mode: '0644'
+        loop:
+            - { service: 'homeassistant', port: 8123 }
+            - { service: 'jellyfin', port: 8096 }
+        notify: Reload nginx
+    handlers:
+      - name: Reload nginx
+        service:
+          name: nginx
+          state: reloaded
+      - name: Restart nginx
+        service:
+          name: nginx
+          state: restarted
