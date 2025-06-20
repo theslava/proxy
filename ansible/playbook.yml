@@ -1,5 +1,17 @@
 ---
-  - name: nginx-install
+  - name: ssh keys
+    hosts: all
+    become: yes
+    tasks:
+      - name: home assistant autossh key
+        lineinfile:
+          path: /home/ec2-user/.ssh/authorized_keys
+          line: "{{ lookup('ansible.builtin.file', '/home/slava/.ssh/ha-autossh.pub') }}"
+      - name: jellyfin autossh key
+        lineinfile:
+          path: /home/ec2-user/.ssh/authorized_keys
+          line: "{{ lookup('ansible.builtin.file', '/home/slava/.ssh/jf-autossh.pub') }}"
+  - name: nginx
     hosts: all
     become: yes
     tasks:
