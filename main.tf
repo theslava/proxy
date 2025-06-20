@@ -85,7 +85,7 @@ resource "aws_acm_certificate" "cert" {
   validation_method = "DNS"
 
   subject_alternative_names = [
-    "ha.theslava.com",
+    for service in var.services: "${service}.aws.theslava.com"
   ]
 
   lifecycle {
@@ -147,10 +147,33 @@ resource "aws_route53_record" "ssh" {
   records = [aws_instance.ssh.public_ip]
 }
 
-resource "aws_route53_record" "proxy" {
+resource "aws_route53_record" "services" {
+  for_each = toset(var.services)
   zone_id = aws_route53_zone.aws.zone_id
-  name    = "proxy.aws.theslava.com"
+  name    = "${each.value}.aws.theslava.com"
   type    = "CNAME"
   ttl     = "30"
   records = [aws_lb.proxy.dns_name]
+}
+
+resource "aws_route53_record" "cert_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.cert.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+
+  allow_overwrite = true
+  name            = each.value.name
+  records         = [each.value.record]
+  ttl             = 60
+  type            = each.value.type
+  zone_id         = aws_route53_zone.aws.zone_id
+}
+
+resource "local_file" "hosts" {
+  content  = aws_instance.ssh.public_ip
+  filename = "${path.module}/ansible/hosts"
 }
