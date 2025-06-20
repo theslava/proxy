@@ -10,8 +10,8 @@ terraform {
 }
 
 provider "aws" {
-  region  = "us-west-2"
-  profile = "terraform"
+  region  = var.region
+  profile = var.profile
 }
 
 resource "aws_default_vpc" "default" {}
@@ -78,11 +78,11 @@ resource "aws_lb" "proxy" {
 }
 
 resource "aws_acm_certificate" "cert" {
-  domain_name       = "theslava.com"
+  domain_name       = var.domain
   validation_method = "DNS"
 
   subject_alternative_names = [
-    for service in var.services: "${service}.aws.theslava.com"
+    for service in var.services: "${service}.aws.${var.domain}"
   ]
 
   lifecycle {
@@ -133,12 +133,12 @@ resource "aws_lb_target_group_attachment" "test" {
 }
 
 resource "aws_route53_zone" "aws" {
-  name = "aws.theslava.com"
+  name = "aws.${var.domain}"
 }
 
 resource "aws_route53_record" "ssh" {
   zone_id = aws_route53_zone.aws.zone_id
-  name    = "ssh.aws.theslava.com"
+  name    = "ssh.aws.${var.domain}"
   type    = "A"
   ttl     = "30"
   records = [aws_instance.ssh.public_ip]
@@ -147,7 +147,7 @@ resource "aws_route53_record" "ssh" {
 resource "aws_route53_record" "services" {
   for_each = toset(var.services)
   zone_id = aws_route53_zone.aws.zone_id
-  name    = "${each.value}.aws.theslava.com"
+  name    = "${each.value}.aws.${var.domain}"
   type    = "CNAME"
   ttl     = "30"
   records = [aws_lb.proxy.dns_name]

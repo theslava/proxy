@@ -1,7 +1,7 @@
 variable "domain" {
   type    = string
   description = "Domain where proxy lives"
-  default = "aws.theslava.com"
+  default = "theslava.com"
 }
 
 variable "profile" {
