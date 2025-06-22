@@ -3,14 +3,13 @@
     hosts: all
     become: yes
     tasks:
-      - name: home assistant autossh key
+      - name: "autossh keys"
         lineinfile:
           path: /home/ec2-user/.ssh/authorized_keys
-          line: "{{ lookup('ansible.builtin.file', '/home/slava/.ssh/ha-autossh.pub') }}"
-      - name: jellyfin autossh key
-        lineinfile:
-          path: /home/ec2-user/.ssh/authorized_keys
-          line: "{{ lookup('ansible.builtin.file', '/home/slava/.ssh/jf-autossh.pub') }}"
+          line: "{{ lookup('ansible.builtin.file', '/home/slava/.ssh/{{ item }}') }}"
+        loop:
+          - ha-autossh.pub
+          - jf-autossh.pub
   - name: nginx
     hosts: all
     become: yes
