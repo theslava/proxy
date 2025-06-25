@@ -27,7 +27,7 @@
           state: started
       - name: Copy variable mapping
         copy:
-          src: nginx-vserver-connection.conf
+          src: conf.d/nginx-vserver-connection.conf
           dest: "/etc/nginx/conf.d/connection-header-map.conf"
           owner: root
           group: root
@@ -35,7 +35,7 @@
         notify: Reload nginx
       - name: Template vserver
         template:
-          src: nginx-vserver.j2
+          src: conf.d/nginx-vserver.j2
           dest: "/etc/nginx/conf.d/{{item.service}}.conf"
           owner: root
           group: root
